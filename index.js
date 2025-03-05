@@ -54,6 +54,8 @@ relevant course resources. Help them think through the problem rather than givin
   `
 
   // register(id: unique button id, name: name of button visible in Coach, function: function to call when button is clicked) 
+  // Update the "iNeedHelpButton" button id string with a unique name for each assistant you create
+  // Update the "I have a question" string to change the button name visible in Coach
   codioIDE.coachBot.register("iNeedHelpButton", "I have a question", onButtonPress)
   
   // function called when I have a question button is pressed
@@ -66,6 +68,10 @@ relevant course resources. Help them think through the problem rather than givin
     
     // Function that automatically collects all available context 
     // returns the following object: {guidesPage, assignmentData, files, error}
+    // guidesPage object contains information on current open guidesPage only
+    // assignmentData object has student and assignment information
+    // files object has information for all open files
+    // error object has information on student code execution result and errorState information
     const context = await codioIDE.coachBot.getContext()
     
     while (true) {
@@ -87,13 +93,27 @@ relevant course resources. Help them think through the problem rather than givin
       }
       
       //Define your assistant's userPrompt - this is where you will provide all the context you collected along with the task you want the LLM to generate text for.
-      const userPrompt = "Here is the question the student has asked:\n\
-        <student_question>\n" + input + "\n</student_question>\n\
-      Please provide your response to the student by following the specified guidelines. \
-      Remember, do not give away any answers or solutions to assignment questions or quizzes. \
-      Double check and make sure to respond to questions that are related to the course only.\
-      For simple questions, keep your answer brief and short."
+      const userPrompt = `Here is the question the student has asked:
+        <student_question>
+        ${input}
+        </student_question>
 
+       Here is the description of the programming assignment the student is working on:
+
+      <assignment>
+      ${context.guidesPage.content}
+      </assignment>
+      
+      Here is the student's current code:
+      
+      <current_code>
+      ${context.files[0]}
+      </current_code> 
+
+      Please provide your response to the student by following the specified guidelines.
+      Remember, do not give away any answers or solutions to assignment questions or quizzes.
+      Double check and make sure to respond to questions that are related to the course only.
+      For simple questions, keep your answer brief and short.`
 
       messages.push({
         "role": "user", 
